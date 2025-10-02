@@ -11,28 +11,30 @@ FIM-motor 合計と項目別50%ポイントから、**5→6–7（修正自立/�
 2. **上回り幅 = 合計 − 50%ポイント** を確認  
 3. **上回り幅 ≥ Δ** の項目が **5→6–7の移行候補（✅）**
 
+## デプロイ（Vercel）
+
+GitHubにpush → Vercelで **New Project** → リポジトリ選択 → **Deploy**。
+
+---
+
+## 免責・用途・プライバシー
+
+- **用途**：教育・参考用（臨床判断の根拠にはしません）
+- **限界**：近似モデル／外部妥当化・校正は未実施
+- **データ**：患者を特定できる情報は保存・送信しません（localStorageは同意フラグのみ）
+
+---
+
+## ライセンス・商標
+
+- **コード**：MIT License（`LICENSE`参照）
+- **コンテンツ（文章・図・UI文言）**：All Rights Reserved（`CONTENT_LICENSE.md`）
+- **商標**：FIM® は UDSMR の登録商標です。本プロジェクトは非公式・非提携です。
+
+
 ## ローカル起動
 ```bash
 # Node 18+ 推奨
 npm install
 npm run dev
 # → http://localhost:3000
-
-デプロイ（Vercel）
-
-GitHubにpush → Vercelで New Project → リポジトリ選択 → Deploy。
-免責・用途・プライバシー
-
-    用途：教育・参考用（臨床判断の根拠にはしません）
-
-    限界：近似モデル／外部妥当化・校正は未実施
-
-    データ：患者を特定できる情報は保存・送信しません（localStorageは同意フラグのみ）
-
-ライセンス・商標
-
-    コード：MIT License（LICENSE参照）
-
-    コンテンツ（文章・図・UI文言）：All Rights Reserved（CONTENT_LICENSE.md）
-
-    商標：FIM® は UDSMR の登録商標です。本プロジェクトは非公式・非提携です。
