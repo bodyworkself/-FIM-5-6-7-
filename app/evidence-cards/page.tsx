@@ -560,6 +560,50 @@ export default function StrokeFIMCheatsheetPage() {
           body::before { opacity: 0.2; }
         }
       `}</style>
+      {/* ここから印刷専用（画面では非表示） */}
+<div className="print-only hidden">
+  <h1 className="print-title">脳卒中版：FIM「監視(5)→自立(6–7)」一覧（教育・参考用）</h1>
+  <div className="print-meta">
+    FIM: {fimValid ? F(fim,0) : '—'}/91　Δ: {bufValid ? bufStr : '—'}　
+    候補: {showRows ? `${candidateCount}/${THRESHOLDS.length}` : '—'}　
+    生成: {new Date().toLocaleString()}
+  </div>
+
+  <table className="print-table full">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>FIM運動項目</th>
+        <th>英語</th>
+        <th className="t-right">50%ポイント</th>
+        <th className="t-right">上回り幅</th>
+        <th className="t-center">候補</th>
+        <th>備考</th>
+      </tr>
+    </thead>
+    <tbody>
+      {showRows ? rows.map((r, i) => (
+        <tr key={r.key}>
+          <td>{i + 1}</td>
+          <td>{r.jp}</td>
+          <td className="muted">{r.en}</td>
+          <td className="t-right">{F(r.th, 1)}</td>
+          <td className={cn('t-right', r.margin >= 0 ? 'pos' : 'neg')}>{F(r.margin, 1)}</td>
+          <td className="t-center">{r.candidate ? '✅' : '—'}</td>
+          <td className="note">{r.note}</td>
+        </tr>
+      )) : (
+        <tr><td colSpan={7} className="t-center">有効な入力が必要です</td></tr>
+      )}
+    </tbody>
+  </table>
+
+  <div className="print-foot">
+    ・教育・参考用。臨床判断の根拠にはしません。／ 閾値は母集団・病期で変動、施設データでの再較正を推奨。<br/>
+    ・FIM® は UDSMR の登録商標です（本アプリは非公式）。
+  </div>
+</div>
+
     </div>
   );
 }
