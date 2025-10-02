@@ -64,14 +64,14 @@ const Modal: React.FC<{
   onClose: () => void; title: string; children: React.ReactNode;
   disableEsc?: boolean; disableBackdropClose?: boolean
 }> = ({ onClose, title, children, disableEsc = false, disableBackdropClose = false }) => {
-  const wrapRef = React.useRef<HTMLDivElement>(null);
   const contentRef = React.useRef<HTMLDivElement>(null);
+
   React.useEffect(() => {
     const prev = document.activeElement as HTMLElement | null;
     const focusables = contentRef.current?.querySelectorAll<HTMLElement>(
       'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
     );
-    focusables && (focusables[0]?.focus());
+    focusables && focusables[0]?.focus();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && !disableEsc) { e.preventDefault(); onClose(); }
       if (e.key === 'Tab') {
@@ -89,24 +89,45 @@ const Modal: React.FC<{
     return () => { document.removeEventListener('keydown', onKey); prev?.focus?.(); };
   }, [onClose, disableEsc]);
 
+  // ★ Tailwind不要のインラインCSSで確実にオーバーレイ化
   return (
     <div
-      ref={wrapRef}
-      className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
-      style={{ height: 'calc(var(--vh, 1vh) * 100)' }}
-      onClick={disableBackdropClose ? undefined : onClose}
       role="dialog" aria-modal="true" aria-label={title}
+      onClick={disableBackdropClose ? undefined : onClose}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0,0,0,0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
+        zIndex: 10000,               // ウォーターマークより前面
+        height: '100vh'
+      }}
     >
-      <div ref={contentRef} className="bg-white rounded-lg p-4 md:p-6 max-w-lg w-full shadow-lg" onClick={(e)=>e.stopPropagation()}>
-        <div className="flex justify-between items-start gap-4 border-b pb-2 mb-3">
-          <h3 className="text-base md:text-lg font-bold">{title}</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600" aria-label="閉じる">×</button>
+      <div
+        ref={contentRef}
+        onClick={(e)=>e.stopPropagation()}
+        style={{
+          background: '#fff',
+          borderRadius: 12,
+          padding: 16,
+          width: '100%',
+          maxWidth: 720,
+          boxShadow: '0 12px 32px rgba(0,0,0,.2)'
+        }}
+      >
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:12, borderBottom:'1px solid #e5e7eb', paddingBottom:8, marginBottom:12}}>
+          <h3 style={{fontSize:18, fontWeight:700, margin:0}}>{title}</h3>
+          <button onClick={onClose} aria-label="閉じる" style={{color:'#6b7280'}}>×</button>
         </div>
         {children}
       </div>
     </div>
   );
 };
+
 
 // ---- Evidence constants ----
 const THRESHOLDS = [
