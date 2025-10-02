@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "es2017"],
+    "jsx": "preserve",
+    "moduleResolution": "node",
+    "module": "esnext",
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": false
+  }
+}
