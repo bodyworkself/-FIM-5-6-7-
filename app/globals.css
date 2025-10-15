@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --- ここからアプリ共通の追加CSS --- */
+
+/* うっすらウォーターマーク（常時） */
+body::before{
+  content: attr(data-wm);
+  position: fixed; inset: 0; top: 50%;
+  transform: rotate(-20deg) translateY(-50%);
+  text-align: center;
+  font-size: 14px; color: #9CA3AF; opacity: .15;
+  pointer-events: none; z-index: 0;
+}
+/* UIはウォーターマークより手前に */
+body > div { position: relative; z-index: 1; }
+
+/* 印刷ルール */
+@media print{
+  .no-print{ display:none !important; }
+  .app-version{ display:none !important; }
+  .print-target{ display:block !important; }
+  body::before{ opacity: .2; }
+  @page{ margin: 12mm; }
+}
