@@ -1,7 +1,6 @@
-// app/page.tsx  ← "use client" は付けない
+// app/page.tsx  （サーバーコンポーネントのまま・"use client" は書かない）
 import { redirect } from 'next/navigation';
 
-export default function Page() {
-  // ルートに来たら /evidence-cards へ 308 リダイレクト
-  redirect('/evidence-cards');
+export default function Home() {
+  redirect('/evidence-cards'); // 307
 }
