@@ -1,3 +1,8 @@
+// app/evidence-cards/page.tsx の先頭付近に追記
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+
 'use client';
 import React, { useMemo, useState } from 'react';
 
