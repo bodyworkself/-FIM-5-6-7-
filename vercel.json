@@ -1,5 +1,3 @@
 {
-  "rewrites": [
-    { "source": "/", "destination": "/evidence-cards" }
-  ]
+  "redirects": [{ "source": "/", "destination": "/evidence-cards", "permanent": true }]
 }
