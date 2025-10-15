@@ -2,14 +2,13 @@
 import React, { useMemo, useState } from 'react';
 
 /**
- * Stroke FIM Cheatsheet – 教育・参考用 版 + 注意/初回同意/規約/プライバシーモーダル
- * - 依存ゼロ（Tailwind想定クラスのみ）
+ * Stroke FIM Cheatsheet – 教育・参考用 版
  * - 入力: FIM-motor 合計（0–91）, Δ（候補判定の安全余裕）
  * - 出力: Uchida 2020 の「監視=5 到達50%ポイント」に対する上回り幅と候補判定
  * - 注意: 教育・参考用。診療上の意思決定を代替しません。
  */
 
-// ---- tiny UI primitives ----
+/* ---------- tiny UI primitives ---------- */
 const cn = (...a: (string | false | null | undefined)[]) => a.filter(Boolean).join(' ');
 const Card: React.FC<{ className?: string; children: React.ReactNode }> = ({ className, children }) => (
   <div className={cn('rounded border shadow-sm bg-white', className)}>{children}</div>
@@ -26,7 +25,7 @@ const Alert: React.FC<{ type?: 'info' | 'warning' | 'error'; className?: string;
   return <div role="alert" className={cn(base, color, className)}>{children}</div>;
 };
 
-// ---- shared text constants ----
+/* ---------- shared text constants ---------- */
 const TEXT = {
   PURPOSE_JA: '教育・参考用',
   PURPOSE_NOTE_JA: '臨床判断の根拠にはしません',
@@ -46,7 +45,7 @@ const InfoBanner: React.FC<{ onOpenAbout: () => void }> = ({ onOpenAbout }) => (
   </div>
 );
 
-// ---- viewport helper ----
+/* ---------- viewport helper (iOS vh対策) ---------- */
 const useViewportVH = () => {
   React.useEffect(() => {
     const setVh = () => {
@@ -59,25 +58,18 @@ const useViewportVH = () => {
   }, []);
 };
 
-// ---- accessible Modal (Esc close + focus trap + iOS vh fix) ----
+/* ---------- accessible Modal (Esc close + focus trap) ---------- */
 const Modal: React.FC<{
   onClose: () => void; title: string; children: React.ReactNode;
   disableEsc?: boolean; disableBackdropClose?: boolean
 }> = ({ onClose, title, children, disableEsc = false, disableBackdropClose = false }) => {
   const contentRef = React.useRef<HTMLDivElement>(null);
-
   React.useEffect(() => {
     const prev = document.activeElement as HTMLElement | null;
-    const focusables = contentRef.current?.querySelectorAll<HTMLElement>(
-      'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    );
-    focusables && focusables[0]?.focus();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && !disableEsc) { e.preventDefault(); onClose(); }
       if (e.key === 'Tab') {
-        const list = contentRef.current?.querySelectorAll<HTMLElement>(
-          'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
-        );
+        const list = contentRef.current?.querySelectorAll<HTMLElement>('a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])');
         if (!list || list.length === 0) return;
         const first = list[0], last = list[list.length - 1];
         const active = document.activeElement as HTMLElement | null;
@@ -86,41 +78,22 @@ const Modal: React.FC<{
       }
     };
     document.addEventListener('keydown', onKey);
+    const first = contentRef.current?.querySelector<HTMLElement>('a,button,input,[tabindex]:not([tabindex="-1"])');
+    first?.focus();
     return () => { document.removeEventListener('keydown', onKey); prev?.focus?.(); };
   }, [onClose, disableEsc]);
 
-  // ★ Tailwind不要のインラインCSSで確実にオーバーレイ化
   return (
     <div
-      role="dialog" aria-modal="true" aria-label={title}
+      className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+      style={{ height: 'calc(var(--vh, 1vh) * 100)' }}
       onClick={disableBackdropClose ? undefined : onClose}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0,0,0,0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 16,
-        zIndex: 10000,               // ウォーターマークより前面
-        height: '100vh'
-      }}
+      role="dialog" aria-modal="true" aria-label={title}
     >
-      <div
-        ref={contentRef}
-        onClick={(e)=>e.stopPropagation()}
-        style={{
-          background: '#fff',
-          borderRadius: 12,
-          padding: 16,
-          width: '100%',
-          maxWidth: 720,
-          boxShadow: '0 12px 32px rgba(0,0,0,.2)'
-        }}
-      >
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:12, borderBottom:'1px solid #e5e7eb', paddingBottom:8, marginBottom:12}}>
-          <h3 style={{fontSize:18, fontWeight:700, margin:0}}>{title}</h3>
-          <button onClick={onClose} aria-label="閉じる" style={{color:'#6b7280'}}>×</button>
+      <div ref={contentRef} className="bg-white rounded-lg p-4 md:p-6 max-w-lg w-full shadow-lg" onClick={(e)=>e.stopPropagation()}>
+        <div className="flex justify-between items-start gap-4 border-b pb-2 mb-3">
+          <h3 className="text-base md:text-lg font-bold">{title}</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600" aria-label="閉じる">×</button>
         </div>
         {children}
       </div>
@@ -128,8 +101,7 @@ const Modal: React.FC<{
   );
 };
 
-
-// ---- Evidence constants ----
+/* ---------- evidence constants ---------- */
 const THRESHOLDS = [
   { key: 'eating',           jp: '食事',                 en: 'Eating',                    th: 34.1, note: '早期から 6–7 へ移行しやすい。嚥下・巧緻を個別評価。' },
   { key: 'bowel',            jp: '排便管理',             en: 'Bowel Management',          th: 42.2, note: 'ルーチン化・環境調整の寄与が大。' },
@@ -146,27 +118,27 @@ const THRESHOLDS = [
   { key: 'stairs',           jp: '階段',                  en: 'Stairs',                    th: 89.2, note: '最難。監視→自立には十分な余力が必要。' },
 ] as const;
 
-// ---- helpers ----
+/* ---------- helpers ---------- */
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 const F = (v: number, d = 1) => (Number.isFinite(v) ? v.toFixed(d) : '—');
 const isValidNumberStr = (s: string, min: number, max: number) => s !== '' && Number.isFinite(Number(s)) && Number(s) >= min && Number(s) <= max;
 
-// 計算ロジック（純関数）
+/* 計算ロジック（純関数） */
 const computeRows = (fim: number, buffer: number, sortKey: 'order' | 'margin' | 'th') => {
   const rows = THRESHOLDS.map((r, i) => {
-    const margin = fim - r.th; // + で「上回り」
-    const candidate = margin >= buffer; // 上回り幅 ≥ Δ
+    const margin = fim - r.th;            // + で「上回り」
+    const candidate = margin >= buffer;   // 上回り幅 ≥ Δ
     return { ...r, margin, candidate, idx: i };
   });
   const sorters = {
-    order: (a: any, b: any) => a.idx - b.idx,
+    order:  (a: any, b: any) => a.idx - b.idx,
     margin: (a: any, b: any) => b.margin - a.margin,
-    th: (a: any, b: any) => a.th - b.th,
+    th:     (a: any, b: any) => a.th - b.th,
   } as const;
   return rows.sort(sorters[sortKey]);
 };
 
-export default function StrokeFIMCheatsheetPage() {
+export default function EvidenceCardsPage() {
   useViewportVH();
 
   React.useEffect(() => {
@@ -174,12 +146,11 @@ export default function StrokeFIMCheatsheetPage() {
     return () => { try { document.body.removeAttribute('data-wm'); } catch {} };
   }, []);
 
-  // 入力は string を保持（空文字許容）し、パース結果の妥当性を別管理
+  // 入力は string を保持（空文字許容）→ 妥当性は別管理
   const [fimStr, setFimStr] = useState('60');
   const [bufStr, setBufStr] = useState('5');
   const fim = Number(fimStr);
   const buffer = Number(bufStr);
-
   const fimValid = isValidNumberStr(fimStr, 0, 91);
   const bufValid = isValidNumberStr(bufStr, 0, 20);
 
@@ -201,7 +172,6 @@ export default function StrokeFIMCheatsheetPage() {
 
   const runTests = () => {
     const out: { name: string; pass: boolean; detail: string }[] = [];
-    // 既存テスト
     out.push({ name: 'clamp', pass: clamp(-5, 0, 91) === 0 && clamp(100, 0, 91) === 91, detail: `[-5→${clamp(-5, 0, 91)}, 100→${clamp(100, 0, 91)}]` });
     const msort = computeRows(60, 5, 'margin');
     out.push({ name: '並べ替え（上回り幅）', pass: msort.every((r, i, a) => i === 0 || a[i - 1].margin >= r.margin), detail: `top=${F(msort[0]?.margin ?? NaN, 1)}` });
@@ -224,11 +194,8 @@ export default function StrokeFIMCheatsheetPage() {
     out.push({ name: 'NaNなし（margin）', pass: noneNaN, detail: 'ok' });
     out.push({ name: '行数=閾値数', pass: computeRows(60, 5, 'order').length === THRESHOLDS.length, detail: `${THRESHOLDS.length}` });
     out.push({ name: 'WATERMARK 文言', pass: typeof WATERMARK === 'string' && /教育・参考用/.test(WATERMARK), detail: WATERMARK.slice(0, 20) + '…' });
-
-    // 追加テスト（新規）: Δを極端に大きくすると候補ゼロ
     const cHuge = computeRows(91, 999, 'order').filter(r => r.candidate).length;
     out.push({ name: 'Δ極大で候補ゼロ', pass: cHuge === 0, detail: `cHuge=${cHuge}` });
-
     setTests(out);
   };
 
@@ -258,9 +225,11 @@ export default function StrokeFIMCheatsheetPage() {
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* 左：入力 */}
         <Card>
           <CardContent className="space-y-3">
             <div className="font-semibold">入力</div>
+
             <label className="flex flex-col gap-1 text-sm">
               <span>FIM-motor 合計（0–91）</span>
               <input
@@ -274,6 +243,7 @@ export default function StrokeFIMCheatsheetPage() {
               />
               {!fimValid && <div className="text-xs text-red-700">0–91 の数値を入力してください（空欄不可）。</div>}
             </label>
+
             <label className="flex flex-col gap-1 text-sm">
               <div className="flex items-center justify-between">
                 <span>候補判定の安全余裕（Δ・点）</span>
@@ -294,6 +264,7 @@ export default function StrokeFIMCheatsheetPage() {
                 aria-invalid={!bufValid}
               />
               <span className="text-xs text-gray-500">例：Δ=5 なら、しきい値+5点以上で候補とみなす。</span>
+
               {showDeltaTip && (
                 <div className="mt-2 text-xs bg-slate-50 border border-slate-200 rounded p-2">
                   <div className="font-medium">Δ（安全余裕）の考え方</div>
@@ -316,6 +287,7 @@ export default function StrokeFIMCheatsheetPage() {
                 <Button onClick={() => setSortKey('th')} className={sortKey === 'th' ? 'bg-black text-white' : ''}>しきい値（昇順）</Button>
               </div>
             </div>
+
             <div className="flex gap-2 pt-1">
               <Button onClick={() => window.print()}>印刷</Button>
               <Button onClick={() => { setFimStr('60'); setBufStr('5'); setSortKey('order'); }}>リセット</Button>
@@ -342,6 +314,7 @@ export default function StrokeFIMCheatsheetPage() {
           </CardContent>
         </Card>
 
+        {/* 右：結果テーブル */}
         <Card className="md:col-span-2">
           <CardContent className="space-y-3">
             <div className="flex items-end justify-between">
@@ -448,6 +421,7 @@ export default function StrokeFIMCheatsheetPage() {
         </CardContent>
       </Card>
 
+      {/* footer buttons */}
       <div className="flex items-center justify-end gap-3 text-xs pt-2 relative z-10">
         <Button onClick={() => setIsTermsOpen(true)}>利用規約</Button>
         <Button onClick={() => setIsPrivacyOpen(true)}>プライバシー</Button>
@@ -467,7 +441,6 @@ export default function StrokeFIMCheatsheetPage() {
           <div className="text-sm space-y-3">
             <div className="border rounded p-2">
               <div className="font-semibold">用途</div>
-              {/* ← バックスラッシュを削除済み */}
               <div className="text-xs text-slate-700">本アプリは <b>教育・参考用</b> のシミュレーターです（<b>臨床判断の根拠にはしません</b>）。<b>診療上の意思決定</b>を代替しません。</div>
             </div>
             <div className="border rounded p-2">
@@ -484,7 +457,7 @@ export default function StrokeFIMCheatsheetPage() {
             </div>
             <div className="border rounded p-2">
               <div className="font-semibold">データ</div>
-              <div className="text-xs text-slate-700">患者を特定できる情報は <b>保存・送信しません</b>（端末内で処理）。レポート出力時は <b>氏名・ID 等を入れない</b>運用を推奨します。</div>
+              <div className="text-xs text-slate-700">患者を特定できる情報は <b>保存・送信しません</b>（端末内で処理）。</div>
             </div>
             <div className="border rounded p-2">
               <div className="font-semibold">免責</div>
@@ -513,7 +486,7 @@ export default function StrokeFIMCheatsheetPage() {
             <p><b>禁止：</b>個別患者の診断・治療方針・予後説明・同意取得の根拠としての使用、緊急時判断。</p>
             <p><b>無保証：</b>本アプリは現状有姿で提供され、明示黙示を問わずいかなる保証も行いません。</p>
             <p><b>責任制限：</b>利用に起因する一切の損害について、提供者は責任を負いません。</p>
-            <p><b>モデルの限界：</b>本アプリは特定論文モデルの実装ではなく、教育目的の参考用です。係数は独自設定であり、<b>外部妥当化・校正は未実施</b>です。</p>
+            <p><b>モデルの限界：</b>特定論文モデルの完全実装ではなく、係数は独自設定。<b>外部妥当化・校正は未実施</b>です。</p>
           </div>
         </Modal>
       )}
@@ -581,50 +554,6 @@ export default function StrokeFIMCheatsheetPage() {
           body::before { opacity: 0.2; }
         }
       `}</style>
-      {/* ここから印刷専用（画面では非表示） */}
-<div className="print-only hidden">
-  <h1 className="print-title">脳卒中版：FIM「監視(5)→自立(6–7)」一覧（教育・参考用）</h1>
-  <div className="print-meta">
-    FIM: {fimValid ? F(fim,0) : '—'}/91　Δ: {bufValid ? bufStr : '—'}　
-    候補: {showRows ? `${candidateCount}/${THRESHOLDS.length}` : '—'}　
-    生成: {new Date().toLocaleString()}
-  </div>
-
-  <table className="print-table full">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>FIM運動項目</th>
-        <th>英語</th>
-        <th className="t-right">50%ポイント</th>
-        <th className="t-right">上回り幅</th>
-        <th className="t-center">候補</th>
-        <th>備考</th>
-      </tr>
-    </thead>
-    <tbody>
-      {showRows ? rows.map((r, i) => (
-        <tr key={r.key}>
-          <td>{i + 1}</td>
-          <td>{r.jp}</td>
-          <td className="muted">{r.en}</td>
-          <td className="t-right">{F(r.th, 1)}</td>
-          <td className={cn('t-right', r.margin >= 0 ? 'pos' : 'neg')}>{F(r.margin, 1)}</td>
-          <td className="t-center">{r.candidate ? '✅' : '—'}</td>
-          <td className="note">{r.note}</td>
-        </tr>
-      )) : (
-        <tr><td colSpan={7} className="t-center">有効な入力が必要です</td></tr>
-      )}
-    </tbody>
-  </table>
-
-  <div className="print-foot">
-    ・教育・参考用。臨床判断の根拠にはしません。／ 閾値は母集団・病期で変動、施設データでの再較正を推奨。<br/>
-    ・FIM® は UDSMR の登録商標です（本アプリは非公式）。
-  </div>
-</div>
-
     </div>
   );
 }
